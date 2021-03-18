@@ -2,6 +2,7 @@
 
 namespace Gloudemans\Shoppingcart;
 
+use Carbon\Carbon;
 use Closure;
 use Illuminate\Database\Connection;
 use Illuminate\Support\Collection;
@@ -29,7 +30,7 @@ class Cart
 
     /**
      * Instance of the event dispatcher.
-     * 
+     *
      * @var Dispatcher
      */
     private $events;
@@ -115,7 +116,7 @@ class Cart
         }
 
         $content->put($cartItem->rowId, $cartItem);
-        
+
         $this->events->dispatch('cart.added', $cartItem);
 
         $this->session->put($this->instance, $content);
@@ -139,7 +140,7 @@ class Cart
 
     /**
      * Gets an additional cost by name
-     * 
+     *
      * @param $name
      * @param int|null $decimals
      * @param string|null $decimalPoint
@@ -398,18 +399,38 @@ class Cart
     {
         $content = $this->getContent();
 
-        if ($this->storedCartWithIdentifierExists($identifier)) {
+        if ($identifier instanceof InstanceIdentifier) {
+            $identifier = $identifier->getInstanceIdentifier();
+        }
+
+        $instance = $this->currentInstance();
+
+        if ($this->storedCartInstanceWithIdentifierExists($instance, $identifier)) {
             throw new CartAlreadyStoredException("A cart with identifier {$identifier} was already stored.");
         }
 
         $this->getConnection()->table($this->getTableName())->insert([
             'identifier' => $identifier,
-            'instance' => $this->currentInstance(),
-            'content' => serialize($content)
+            'instance'   => $instance,
+            'content'    => serialize($content),
+            'created_at' => $this->createdAt ?: Carbon::now(),
+            'updated_at' => Carbon::now(),
         ]);
 
         $this->events->dispatch('cart.stored');
+
     }
+
+    /**
+     * @param $identifier
+     *
+     * @return bool
+     */
+    private function storedCartInstanceWithIdentifierExists($instance, $identifier)
+    {
+        return $this->getConnection()->table($this->getTableName())->where(['identifier' => $identifier, 'instance'=> $instance])->exists();
+    }
+
 
     /**
      * Restore the cart with the given identifier.
@@ -419,18 +440,22 @@ class Cart
      */
     public function restore($identifier)
     {
-        if( ! $this->storedCartWithIdentifierExists($identifier)) {
+        if ($identifier instanceof InstanceIdentifier) {
+            $identifier = $identifier->getInstanceIdentifier();
+        }
+
+        $currentInstance = $this->currentInstance();
+
+        if (!$this->storedCartInstanceWithIdentifierExists($currentInstance, $identifier)) {
             return;
         }
 
         $stored = $this->getConnection()->table($this->getTableName())
-            ->where('identifier', $identifier)->first();
+            ->where(['identifier'=> $identifier, 'instance' => $currentInstance])->first();
 
-        $storedContent = unserialize($stored->content);
+        $storedContent = unserialize(data_get($stored, 'content'));
 
-        $currentInstance = $this->currentInstance();
-
-        $this->instance($stored->instance);
+        $this->instance(data_get($stored, 'instance'));
 
         $content = $this->getContent();
 
@@ -444,8 +469,78 @@ class Cart
 
         $this->instance($currentInstance);
 
-        $this->getConnection()->table($this->getTableName())
-            ->where('identifier', $identifier)->delete();
+        $this->createdAt = Carbon::parse(data_get($stored, 'created_at'));
+        $this->updatedAt = Carbon::parse(data_get($stored, 'updated_at'));
+
+        $this->getConnection()->table($this->getTableName())->where(['identifier' => $identifier, 'instance' => $currentInstance])->delete();
+
+    }
+
+    /**
+     * Merges the contents of another cart into this cart.
+     *
+     * @param mixed $identifier   Identifier of the Cart to merge with.
+     * @param bool  $keepDiscount Keep the discount of the CartItems.
+     * @param bool  $keepTax      Keep the tax of the CartItems.
+     * @param bool  $dispatchAdd  Flag to dispatch the add events.
+     *
+     * @return bool
+     */
+    public function merge($identifier, $keepTax = false, $dispatchAdd = true, $instance = self::DEFAULT_INSTANCE)
+    {
+        if (!$this->storedCartInstanceWithIdentifierExists($instance, $identifier)) {
+            return false;
+        }
+
+        $stored = $this->getConnection()->table($this->getTableName())
+            ->where(['identifier'=> $identifier, 'instance'=> $instance])->first();
+
+        $storedContent = unserialize($stored->content);
+
+        foreach ($storedContent as $cartItem) {
+            $this->addCartItem($cartItem, $keepTax, $dispatchAdd);
+        }
+
+        $this->events->dispatch('cart.merged');
+
+        return true;
+    }
+
+    /**
+     * Add an item to the cart.
+     *
+     * @param \Gloudemans\Shoppingcart\CartItem $item          Item to add to the Cart
+     * @param bool                              $keepDiscount  Keep the discount rate of the Item
+     * @param bool                              $keepTax       Keep the Tax rate of the Item
+     * @param bool                              $dispatchEvent
+     *
+     * @return \Gloudemans\Shoppingcart\CartItem The CartItem
+     */
+    public function addCartItem($item, $keepTax = false, $dispatchEvent = true)
+    {
+        if (!$keepTax) {
+            $item->setTaxRate($this->taxRate);
+        }
+
+        $content = $this->getContent();
+
+        if ($content->has($item->rowId)) {
+            $item->qty += $content->get($item->rowId)->qty;
+        }
+
+        $content->put($item->rowId, $item);
+
+        if ($dispatchEvent) {
+            $this->events->dispatch('cart.adding', $item);
+        }
+
+        $this->session->put($this->instance, $content);
+
+        if ($dispatchEvent) {
+            $this->events->dispatch('cart.added', $item);
+        }
+
+        return $item;
     }
 
     /**

@@ -105,7 +105,7 @@ class CartItem implements Arrayable, Jsonable
     {
         return $this->numberFormat($this->price);
     }
-    
+
     /**
      * Returns the formatted price with TAX.
      *
@@ -132,7 +132,7 @@ class CartItem implements Arrayable, Jsonable
     {
         return $this->numberFormat($this->subtotal);
     }
-    
+
     /**
      * Returns the formatted total.
      * Total is price for whole CartItem with TAX
@@ -159,7 +159,7 @@ class CartItem implements Arrayable, Jsonable
     {
         return $this->numberFormat($this->tax);
     }
-    
+
     /**
      * Returns the formatted tax.
      *
@@ -227,7 +227,7 @@ class CartItem implements Arrayable, Jsonable
     public function associate($model)
     {
         $this->associatedModel = is_string($model) ? $model : get_class($model);
-        
+
         return $this;
     }
 
@@ -240,7 +240,7 @@ class CartItem implements Arrayable, Jsonable
     public function setTaxRate($taxRate)
     {
         $this->taxRate = $taxRate;
-        
+
         return $this;
     }
 
@@ -259,11 +259,11 @@ class CartItem implements Arrayable, Jsonable
         if($attribute === 'priceTax') {
             return number_format($this->price + $this->tax, 2, '.', '');
         }
-        
+
         if($attribute === 'subtotal') {
             return number_format($this->qty * $this->price, 2, '.', '');
         }
-        
+
         if($attribute === 'total') {
             return number_format($this->qty * $this->priceTax, 2, '.', '');
         }
@@ -271,7 +271,7 @@ class CartItem implements Arrayable, Jsonable
         if($attribute === 'tax') {
             return number_format($this->price * ($this->taxRate / 100), 2, '.', '');
         }
-        
+
         if($attribute === 'taxTotal') {
             return number_format($this->tax * $this->qty, 2, '.', '');
         }
