@@ -1,9 +1,4 @@
 ## LaravelShoppingcart
-[![Build Status](https://travis-ci.com/mindscms/LaravelShoppingcart.svg?branch=master)](https://travis-ci.com/mindscms/LaravelShoppingcart)
-[![Total Downloads](https://poser.pugx.org/mindscms/laravelshoppingcart/downloads.png)](https://packagist.org/packages/mindscms/laravelshoppingcart)
-[![Latest Stable Version](https://poser.pugx.org/mindscms/laravelshoppingcart/v/stable)](https://packagist.org/packages/mindscms/laravelshoppingcart)
-[![Latest Unstable Version](https://poser.pugx.org/mindscms/laravelshoppingcart/v/unstable)](https://packagist.org/packages/mindscms/laravelshoppingcart)
-[![License](https://poser.pugx.org/mindscms/laravelshoppingcart/license)](https://packagist.org/packages/mindscms/laravelshoppingcart)
 
 A simple shopping cart implementation for Laravel 7 & 8.
 
