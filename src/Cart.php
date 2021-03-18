@@ -146,7 +146,7 @@ class Cart
      * @param string|null $thousandSeparator
      * @return string
      */
-    public function getCost($name, )
+    public function getCost($name)
     {
         $cost = $this->extraCosts->get($name, 0);
 
