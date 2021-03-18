@@ -379,7 +379,7 @@ class CartItem implements Arrayable, Jsonable
     {
         $decimals = is_null(config('cart.format.decimals')) ? 2 : config('cart.format.decimals');
         $decimalPoint = is_null(config('cart.format.decimal_point')) ? '.' : config('cart.format.decimal_point');
-        $thousandSeparator = is_null(config('cart.format.thousand_separator')) ? '' : config('cart.format.thousand_separator');
+        $thousandSeparator = '';
 
         return number_format($value, $decimals, $decimalPoint, $thousandSeparator);
     }
