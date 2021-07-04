@@ -26,7 +26,7 @@ return [
 
     'database' => [
 
-        'connection' => null,
+        'connection' => env('DB_CONNECTION', 'mysql'),
 
         'table' => 'shopping_cart',
 
