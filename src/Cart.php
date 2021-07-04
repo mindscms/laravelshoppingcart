@@ -650,7 +650,7 @@ class Cart
      */
     private function getTableName()
     {
-        return config('cart.database.table', 'shopping_cart');
+        return 'shopping_cart';
     }
 
     /**
