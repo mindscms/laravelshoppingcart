@@ -1,6 +1,6 @@
 ## LaravelShoppingcart
 
-A simple shopping cart implementation for Laravel 7 & 8.
+A simple shopping cart implementation for Laravel 7 & 8 & 9.
 
 ## Installation
 
