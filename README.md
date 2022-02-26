@@ -10,9 +10,9 @@ Run the Composer require command from the Terminal:
 
     composer require mindscms/laravelshoppingcart
 
-### Laravel <= 5.4
+### Laravel <= 7.0
 
-Should you still be on version 5.4 of Laravel, the final steps for you are to add the service provider of the package and alias the package. To do this open your `config/app.php` file.
+Should you still be on version 7.0 of Laravel, the final steps for you are to add the service provider of the package and alias the package. To do this open your `config/app.php` file.
 
 Add a new line to the `providers` array:
 
