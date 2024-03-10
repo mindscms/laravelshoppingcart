@@ -1,3 +1,4 @@
+## This repo is forked by Charcharkhkala
 ## LaravelShoppingcart
 
 A simple shopping cart implementation for Laravel 7 & 8 & 9 & 10.
